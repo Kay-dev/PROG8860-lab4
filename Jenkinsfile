@@ -8,7 +8,7 @@ pipeline {
         AWS_REGION = 'us-east-1'
         S3_BUCKET = 'prog8860-artifacts'
         LAMBDA_FUNCTION_NAME = 'prog8860-lab2-lambda'
-        PATH = "C:\\Program Files\\Amazon\\AWSCLIV2\\;$env:PATH"
+        // PATH = "C:\\Program Files\\Amazon\\AWSCLIV2\\;$env:PATH"
     }
 
     stages {
