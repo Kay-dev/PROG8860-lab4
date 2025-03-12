@@ -62,30 +62,13 @@ pipeline {
                     "AWS_SESSION_TOKEN=${env.AWS_SESSION_TOKEN}",
                     "AWS_DEFAULT_REGION=${env.AWS_REGION}"
                 ]) {
+                    // Skip creating config files and use environment variables directly
                     powershell '''
-                        # Create AWS config files
-                        $awsFolder = "$env:USERPROFILE\\.aws"
-                        New-Item -Path $awsFolder -ItemType Directory -Force | Out-Null
-                        
-                        # Create credentials file
-                        @"
-[default]
-aws_access_key_id = $env:AWS_ACCESS_KEY_ID
-aws_secret_access_key = $env:AWS_SECRET_ACCESS_KEY
-aws_session_token = $env:AWS_SESSION_TOKEN
-region = $env:AWS_DEFAULT_REGION
-"@ | Out-File -FilePath "$awsFolder\\credentials" -Encoding utf8 -Force
-                        
-                        # Create config file to disable SSL verification
-                        @"
-[default]
-region = $env:AWS_DEFAULT_REGION
-output = json
-ssl_verify = false
-"@ | Out-File -FilePath "$awsFolder\\config" -Encoding utf8 -Force
-                        
-                        # Update Lambda function directly with the ZIP file
-                        aws lambda update-function-code --function-name $env:LAMBDA_FUNCTION_NAME --zip-file fileb://deployment.zip
+                        # Set AWS CLI command directly with credentials
+                        aws lambda update-function-code `
+                            --function-name $env:LAMBDA_FUNCTION_NAME `
+                            --zip-file fileb://deployment.zip `
+                            --no-verify-ssl
                     '''
                 }
             }
