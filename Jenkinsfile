@@ -19,22 +19,22 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'npm install'
-                sh 'npm run build'
-                sh 'zip -r deployment.zip dist/'
+                powershell 'npm install'
+                powershell 'npm run build'
+                powershell 'Compress-Archive -Path ./dist -DestinationPath deployment.zip'
             }
         }
 
         stage('Test') {
             steps {
-                sh 'npm test'
+                powershell 'npm test'
             }
         }
 
         stage('Push to S3') {
             steps {
                 withAWS(credentials: 'aws-credentials') {
-                    sh 'aws s3 cp deployment.zip s3://$S3_BUCKET/'
+                    powershell "aws s3 cp deployment.zip s3://$env:S3_BUCKET/"
                 }
             }
         }
@@ -42,7 +42,7 @@ pipeline {
         stage('Deploy to Lambda') {
             steps {
                 withAWS(credentials: 'aws-credentials') {
-                    sh 'aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --s3-bucket $S3_BUCKET --s3-key deployment.zip'
+                    powershell "aws lambda update-function-code --function-name $env:LAMBDA_FUNCTION_NAME --s3-bucket $env:S3_BUCKET --s3-key deployment.zip"
                 }
             }
         }
