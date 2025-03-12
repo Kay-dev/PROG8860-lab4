@@ -1,4 +1,5 @@
 import groovy.json.JsonSlurper
+
 pipeline {
     agent any
     tools {
@@ -31,8 +32,7 @@ pipeline {
                 }
             }
         }
-        
-        
+
         stage('Debug PATH') {
             steps {
                 powershell 'echo $env:PATH'
@@ -59,11 +59,11 @@ pipeline {
 
         stage('Push to S3') {
             steps {
-                withEnv(["AWS_ACCESS_KEY_ID=${env.AWS_ACCESS_KEY_ID}", 
-                         "AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY}", 
+                withEnv(["AWS_ACCESS_KEY_ID=${env.AWS_ACCESS_KEY_ID}",
+                         "AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY}",
                          "AWS_SESSION_TOKEN=${env.AWS_SESSION_TOKEN}",
-                         "AWS_CA_BUNDLE=",
-                         "PYTHONWARNINGS=ignore:Unverified HTTPS request"]) {
+                         'AWS_CA_BUNDLE=',
+                         'PYTHONWARNINGS=ignore:Unverified HTTPS request']) {
                     // Create AWS CLI config file to disable SSL verification
                     powershell '''
                         $configContent = @"
@@ -77,23 +77,23 @@ s3 =
 "@
                         New-Item -Path $env:USERPROFILE\\.aws -ItemType Directory -Force
                         Set-Content -Path $env:USERPROFILE\\.aws\\config -Value $configContent
-                        
+
                         # Attempt S3 upload with additional flags
                         aws s3 cp deployment.zip s3://$env:S3_BUCKET/ --no-verify-ssl --cli-connect-timeout 30
                     '''
-                }
+                         }
             }
         }
 
         stage('Deploy to Lambda') {
             steps {
-                withEnv(["AWS_ACCESS_KEY_ID=${env.AWS_ACCESS_KEY_ID}", 
-                         "AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY}", 
+                withEnv(["AWS_ACCESS_KEY_ID=${env.AWS_ACCESS_KEY_ID}",
+                         "AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY}",
                          "AWS_SESSION_TOKEN=${env.AWS_SESSION_TOKEN}",
-                         "AWS_CA_BUNDLE=",
-                         "PYTHONWARNINGS=ignore:Unverified HTTPS request"]) {
+                         'AWS_CA_BUNDLE=',
+                         'PYTHONWARNINGS=ignore:Unverified HTTPS request']) {
                     powershell 'aws lambda update-function-code --function-name $env:LAMBDA_FUNCTION_NAME --s3-bucket $env:S3_BUCKET --s3-key deployment.zip --no-verify-ssl'
-                }
+                         }
             }
         }
     }
