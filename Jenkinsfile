@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Debug PATH') {
             steps {
-                bat 'echo %PATH%'
+                powershell 'echo $env:PATH'
             }
         }
         stage('Checkout') {
