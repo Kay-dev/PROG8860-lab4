@@ -11,6 +11,11 @@ pipeline {
     }
 
     stages {
+        stage('Debug PATH') {
+            steps {
+                powershell 'echo $env:PATH'
+            }
+        }
         stage('Checkout') {
             steps {
                 checkout scm
