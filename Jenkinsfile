@@ -36,23 +36,25 @@ pipeline {
             }
         }
 
-        stage('Debug S3_BUCKET') {
+        stage('Check AWS Credentials') {
             steps {
-                powershell 'echo $env:S3_BUCKET'
+                withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
+                    powershell "aws sts get-caller-identity"
+                }
             }
         }
 
         stage('Push to S3') {
             steps {
-                withAWS(credentials: 'aws-credentials') {
-                    powershell 'aws s3 cp deployment.zip s3://$env:S3_BUCKET/'
+                withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
+                    powershell 'aws s3 cp deployment.zip s3://$env:S3_BUCKET/ --no-verify-ssl'
                 }
             }
         }
 
         stage('Deploy to Lambda') {
             steps {
-                withAWS(credentials: 'aws-credentials') {
+                withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
                     powershell 'aws lambda update-function-code --function-name $env:LAMBDA_FUNCTION_NAME --s3-bucket $env:S3_BUCKET --s3-key deployment.zip'
                 }
             }
