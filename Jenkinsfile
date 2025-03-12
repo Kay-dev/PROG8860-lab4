@@ -6,7 +6,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'us-east-1'
-        S3_BUCKET = 'prog8860-lab2-artifacts'
+        S3_BUCKET = 'prog8860-artifacts'
         LAMBDA_FUNCTION_NAME = 'prog8860-lab2-lambda'
     }
 
