@@ -10,9 +10,9 @@ pipeline {
         AWS_REGION = 'us-east-1'
         LAMBDA_FUNCTION_NAME = 'prog8860-lab2-lambda'
         PATH = "${env.PATH};C:\\Program Files\\Amazon\\AWSCLIV2"
-        // Explicitly set AWS config file to an empty string to prevent AWS CLI from looking for it
-        AWS_CONFIG_FILE = ''
-        AWS_SHARED_CREDENTIALS_FILE = ''
+        // Explicitly set AWS config file paths with proper Windows backslashes
+        AWS_CONFIG_FILE = 'C:\\Windows\\Temp\\empty-aws-config'
+        AWS_SHARED_CREDENTIALS_FILE = 'C:\\Windows\\Temp\\empty-aws-credentials'
     }
 
     stages {
@@ -47,7 +47,14 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 powershell 'npm install'
-                powershell 'Compress-Archive -Path ./index.js, ./node_modules/* -DestinationPath deployment.zip -Force'
+                powershell '''
+                    if (-Not (Test-Path -Path "deployment.zip")) {
+                        Write-Host "Creating deployment.zip file..."
+                        Compress-Archive -Path ./index.js, ./node_modules/* -DestinationPath deployment.zip -Force
+                    } else {
+                        Write-Host "deployment.zip already exists, skipping archive creation."
+                    }
+                '''
             }
         }
 
@@ -64,11 +71,19 @@ pipeline {
                     "AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY}",
                     "AWS_SESSION_TOKEN=${env.AWS_SESSION_TOKEN}",
                     "AWS_DEFAULT_REGION=${env.AWS_REGION}",
-                    "AWS_CONFIG_FILE=",
-                    "AWS_SHARED_CREDENTIALS_FILE="
+                    "AWS_CONFIG_FILE=${env.AWS_CONFIG_FILE}",
+                    "AWS_SHARED_CREDENTIALS_FILE=${env.AWS_SHARED_CREDENTIALS_FILE}"
                 ]) {
                     powershell '''
-                        # Deploy directly to Lambda without using config files
+                        # Create empty config files if they don't exist
+                        if (-Not (Test-Path -Path $env:AWS_CONFIG_FILE)) {
+                            New-Item -Path $env:AWS_CONFIG_FILE -ItemType File -Force | Out-Null
+                        }
+                        if (-Not (Test-Path -Path $env:AWS_SHARED_CREDENTIALS_FILE)) {
+                            New-Item -Path $env:AWS_SHARED_CREDENTIALS_FILE -ItemType File -Force | Out-Null
+                        }
+                        
+                        # Deploy directly to Lambda
                         aws lambda update-function-code --function-name $env:LAMBDA_FUNCTION_NAME --zip-file fileb://deployment.zip
                     '''
                 }
