@@ -45,7 +45,7 @@ pipeline {
         stage('Push to S3') {
             steps {
                 withAWS(credentials: 'aws-credentials') {
-                    powershell "aws s3 cp deployment.zip s3://$env:S3_BUCKET/"
+                    powershell 'aws s3 cp deployment.zip s3://$env:S3_BUCKET/'
                 }
             }
         }
@@ -53,7 +53,7 @@ pipeline {
         stage('Deploy to Lambda') {
             steps {
                 withAWS(credentials: 'aws-credentials') {
-                    powershell "aws lambda update-function-code --function-name $env:LAMBDA_FUNCTION_NAME --s3-bucket $env:S3_BUCKET --s3-key deployment.zip"
+                    powershell 'aws lambda update-function-code --function-name $env:LAMBDA_FUNCTION_NAME --s3-bucket $env:S3_BUCKET --s3-key deployment.zip'
                 }
             }
         }
