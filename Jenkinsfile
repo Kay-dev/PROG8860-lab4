@@ -36,6 +36,12 @@ pipeline {
             }
         }
 
+        stage('Debug S3_BUCKET') {
+            steps {
+                powershell 'echo $env:S3_BUCKET'
+            }
+        }
+
         stage('Push to S3') {
             steps {
                 withAWS(credentials: 'aws-credentials') {
