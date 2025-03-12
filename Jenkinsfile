@@ -83,16 +83,21 @@ pipeline {
                             New-Item -Path $env:AWS_SHARED_CREDENTIALS_FILE -ItemType File -Force | Out-Null
                         }
                         
-                        # Try to deploy to Lambda, but don't fail the build if permissions are denied
-                        try {
-                            Write-Host "Attempting to deploy to Lambda function: $env:LAMBDA_FUNCTION_NAME"
-                            aws lambda update-function-code --function-name $env:LAMBDA_FUNCTION_NAME --zip-file fileb://deployment.zip
+                        # Deploy to Lambda with proper error handling
+                        Write-Host "Attempting to deploy to Lambda function: $env:LAMBDA_FUNCTION_NAME"
+                        
+                        # Run AWS CLI command and capture its output and exit code
+                        $output = aws lambda update-function-code --function-name $env:LAMBDA_FUNCTION_NAME --zip-file fileb://deployment.zip 2>&1
+                        $exitCode = $LASTEXITCODE
+                        
+                        # Check if the command was successful
+                        if ($exitCode -eq 0) {
                             Write-Host "Lambda deployment successful"
-                        } catch {
+                        } else {
                             Write-Host "Warning: Could not deploy to Lambda. This may be due to permission restrictions."
-                            Write-Host "Error details: $_"
+                            Write-Host "Error details: $output"
                             Write-Host "Continuing with the build process despite Lambda deployment failure."
-                            # Exit with success code to allow the pipeline to continue
+                            # Don't fail the build
                             exit 0
                         }
                     '''
