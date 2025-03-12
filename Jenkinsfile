@@ -20,7 +20,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 powershell 'npm install'
-                powershell 'Compress-Archive -Path ./dist -DestinationPath deployment.zip'
+                powershell 'Compress-Archive -Path ./server.js, ./node_modules/* -DestinationPath deployment.zip'
             }
         }
 
