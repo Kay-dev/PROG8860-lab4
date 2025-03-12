@@ -63,7 +63,6 @@ pipeline {
                 withAWS(
                     accessKey: awsCreds.aws_access_key_id,
                     secretKey: awsCreds.aws_secret_access_key,
-                    secretKey: awsCreds.aws_secret_access_key,
                     sessionToken: awsCreds.aws_session_token
                 ) {
                     powershell 'aws lambda update-function-code --function-name $env:LAMBDA_FUNCTION_NAME --s3-bucket $env:S3_BUCKET --s3-key deployment.zip'
