@@ -29,6 +29,7 @@ pipeline {
             }
         }
         
+        
         stage('Debug PATH') {
             steps {
                 powershell 'echo $env:PATH'
