@@ -10,6 +10,9 @@ pipeline {
         AWS_REGION = 'us-east-1'
         LAMBDA_FUNCTION_NAME = 'prog8860-lab2-lambda'
         PATH = "${env.PATH};C:\\Program Files\\Amazon\\AWSCLIV2"
+        // Explicitly set AWS config file to an empty string to prevent AWS CLI from looking for it
+        AWS_CONFIG_FILE = ''
+        AWS_SHARED_CREDENTIALS_FILE = ''
     }
 
     stages {
@@ -60,15 +63,13 @@ pipeline {
                     "AWS_ACCESS_KEY_ID=${env.AWS_ACCESS_KEY_ID}",
                     "AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY}",
                     "AWS_SESSION_TOKEN=${env.AWS_SESSION_TOKEN}",
-                    "AWS_DEFAULT_REGION=${env.AWS_REGION}"
+                    "AWS_DEFAULT_REGION=${env.AWS_REGION}",
+                    "AWS_CONFIG_FILE=",
+                    "AWS_SHARED_CREDENTIALS_FILE="
                 ]) {
-                    // Skip creating config files and use environment variables directly
                     powershell '''
-                        # Set AWS CLI command directly with credentials
-                        aws lambda update-function-code `
-                            --function-name $env:LAMBDA_FUNCTION_NAME `
-                            --zip-file fileb://deployment.zip `
-                            --no-verify-ssl
+                        # Deploy directly to Lambda without using config files
+                        aws lambda update-function-code --function-name $env:LAMBDA_FUNCTION_NAME --zip-file fileb://deployment.zip
                     '''
                 }
             }
