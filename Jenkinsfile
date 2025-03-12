@@ -12,6 +12,16 @@ pipeline {
     }
 
     stages {
+        stage('Setup AWS Credentials') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'aws-json', variable: 'AWS_CREDS_JSON')]) {
+                        awsCreds = new JsonSlurper().parseText(AWS_CREDS_JSON)
+                    }
+                }
+            }
+        }
+
         stage('Debug PATH') {
             steps {
                 powershell 'echo $env:PATH'
@@ -36,17 +46,13 @@ pipeline {
             }
         }
 
-        stage('Check AWS Credentials') {
-            steps {
-                withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
-                    powershell "aws sts get-caller-identity"
-                }
-            }
-        }
-
         stage('Push to S3') {
             steps {
-                withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
+                withAWS(
+                    accessKey: awsCreds.aws_access_key_id,
+                    secretKey: awsCreds.aws_secret_access_key,
+                    sessionToken: awsCreds.aws_session_token
+                ) {
                     powershell 'aws s3 cp deployment.zip s3://$env:S3_BUCKET/ --no-verify-ssl'
                 }
             }
@@ -54,7 +60,12 @@ pipeline {
 
         stage('Deploy to Lambda') {
             steps {
-                withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
+                withAWS(
+                    accessKey: awsCreds.aws_access_key_id,
+                    secretKey: awsCreds.aws_secret_access_key,
+                    secretKey: awsCreds.aws_secret_access_key,
+                    sessionToken: awsCreds.aws_session_token
+                ) {
                     powershell 'aws lambda update-function-code --function-name $env:LAMBDA_FUNCTION_NAME --s3-bucket $env:S3_BUCKET --s3-key deployment.zip'
                 }
             }
