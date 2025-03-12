@@ -17,10 +17,9 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Install Dependencies') {
             steps {
                 powershell 'npm install'
-                powershell 'npm run build'
                 powershell 'Compress-Archive -Path ./dist -DestinationPath deployment.zip'
             }
         }
