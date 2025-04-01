@@ -39,7 +39,6 @@ stages:
     steps:
     - task: AzureFunctionApp@2
       inputs:
-        azureSubscription: '$(subscription)'
         appType: 'functionAppLinux'
         appName: 'myAzureFunctionApp'
         package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
