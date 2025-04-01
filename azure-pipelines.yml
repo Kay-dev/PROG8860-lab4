@@ -27,6 +27,7 @@ stages:
       vmImage: ubuntu-latest
     steps:
     - script: |
+        npm install
         npm test
 - stage: Deploy
   displayName: 'Deploy to Azure'
