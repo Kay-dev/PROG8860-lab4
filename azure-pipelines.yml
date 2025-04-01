@@ -39,6 +39,7 @@ stages:
     steps:
     - task: AzureFunctionApp@2
       inputs:
+        connectedServiceNameARM: 'Azure for Students(b96627c2-d823-46f0-b909-7fdba823b9bc)'
         appType: 'functionAppLinux'
         appName: 'myAzureFunctionApp'
         package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
